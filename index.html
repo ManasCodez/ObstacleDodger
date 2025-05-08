@@ -1,60 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Obstacle Dodger</title>
-  <link rel="stylesheet" type="text/css" href="styles.css">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <title>Obstacle Dodger</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1><u>OBSTACLE DODGER</u></h1>
-    
-    <section>
-        <a href="https://github.com/ManasCodez"><button class="about-me">About Me
-        </button></a>
-    
-   
-        <button id="start-button" onclick="startGame()" class="start-btn">Start</button>
-    
-    
-        <a href="#H2P" ><button class="H2P">How To Play</button></a>
-    </section>
+  <div class="container">
+    <header>
+      <h1>OBSTACLE DODGER</h1>
+      <div class="controls">
+        <a href="https://github.com/ManasCodez" class="btn about-me">About Me</a>
+        <button id="start-button" class="btn start-btn">Start Game</button>
+        <a href="#how-to-play" class="btn how-to-play">How To Play</a>
+      </div>
+    </header>
 
+    <main>
+      <div class="game-area">
+        <div class="game-container">
+          <div id="bike" class="bike"></div>
+          <div class="obstacles"></div>
+        </div>
+        <div id="score" class="score-display">Score: 0</div>
+      </div>
 
-  <div class="game-container">
-    <div id="bike" class="bike"></div>
-    <div class="obstacles"></div>
+      <section id="how-to-play" class="instructions">
+        <h2>HOW TO PLAY</h2>
+        <div class="instruction-content">
+          <p>Use your mouse or touch to move the blue bike left and right.</p>
+          <p>Avoid the red obstacles coming your way!</p>
+          <p>The game gets faster as you score more points.</p>
+        </div>
+      </section>
+
+      <section class="contact">
+        <h3>CONTACT</h3>
+        <p>For any inquiries or feedback:</p>
+        <p class="email">Email: <span>ManasMailsss@gmail.com</span></p>
+        <div class="social-links">
+          <a href="https://www.linkedin.com/in/manas-sharma-404b90282" class="btn linkedin">Connect on LinkedIn</a>
+          <a href="https://manascodez.github.io/TypingTest/" class="btn more-games">More Games</a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; 2023 Obstacle Dodger | Created by Manas Sharma</p>
+    </footer>
   </div>
-  <div id="score">Score: 0</div>
-  
- 
-  <section id="H2P">
-    <h2><u>How To Play</u></h2>
-    <p>Press the Start button to start the game and control the blue body by gliding your mouse 
-      pointer or fingertip in the box.</p>
-    <p>Avoid the RED objects coming in your way.</p>
-  </section>
-
- 
 
   <script src="script.js"></script>
-
-  
-  <div class="contact-section">
-    <h3>Contact </h3>
-    <p>For any inquiries, or errors found please reach out to us:</p>
-    <p>Email: <h4>ManasMailsss@gamil.com</h4></p>
-    </div>
-  
-      <a href="https://www.linkedin.com/in/manas-sharma-404b90282" > <button class="linkedin-btn">Connect on Linkedin</button></a>
-      <a href="https://manascodez.github.io/TypingTest/"> <button class="more"><b>More by Me</b></button></a>
-
-    
-
-    
-    
- 
-    
-
 </body>
 </html>
