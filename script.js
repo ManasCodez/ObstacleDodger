@@ -8,6 +8,8 @@ let obstacleCreationInterval = 800;
 let gameStarted = false;
 let currentObstacleSpeed = obstacleSpeed;
 let gameContainerRect;
+let touchMoveX = 0;
+let moveIntervals = []; // To track all obstacle movement intervals
 
 // Initialize game when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
@@ -27,44 +29,55 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function startGame() {
-  if (!gameStarted) {
-    gameStarted = true;
-    score = 0;
-    document.getElementById('score').textContent = 'Score: ' + score;
-    
-    // Clear any existing obstacles
-    document.querySelectorAll('.obstacle').forEach(obs => obs.remove());
-    
-    // Reset bike position
-    bike.style.left = '50%';
-    
-    // Set up event listeners
-    gameContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
-    gameContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
-    gameContainer.addEventListener('touchend', handleTouchEnd);
-    gameContainer.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('keydown', handleKeyDown);
-    
-    // Reset speeds
-    obstacleSpeed = 5;
-    currentObstacleSpeed = obstacleSpeed;
-    
-    // Start obstacle generation
-    obstacleInterval = setInterval(createObstacle, obstacleCreationInterval);
-    
-    // Update start button text
-    document.getElementById('start-button').textContent = 'Restart Game';
+  if (gameStarted) {
+    // If game is already running, stop it first
+    stopGame();
   }
+  
+  gameStarted = true;
+  score = 0;
+  document.getElementById('score').textContent = 'Score: ' + score;
+  
+  // Clear any existing obstacles and intervals
+  document.querySelectorAll('.obstacle').forEach(obs => obs.remove());
+  moveIntervals.forEach(interval => clearInterval(interval));
+  moveIntervals = [];
+  
+  // Reset bike position
+  bike.style.left = '50%';
+  bike.style.transform = 'translateX(-50%)';
+  
+  // Set up event listeners
+  gameContainer.addEventListener('mousemove', handleMouseMove);
+  window.addEventListener('keydown', handleKeyDown);
+  
+  // For touch devices
+  gameContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
+  gameContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
+  
+  // Reset speeds
+  obstacleSpeed = 5;
+  currentObstacleSpeed = obstacleSpeed;
+  obstacleCreationInterval = 800;
+  
+  // Start obstacle generation
+  obstacleInterval = setInterval(createObstacle, obstacleCreationInterval);
+  
+  // Update start button text
+  document.getElementById('start-button').textContent = 'Restart Game';
 }
 
 function stopGame() {
   clearInterval(obstacleInterval);
   gameStarted = false;
   
+  // Clear all obstacle movement intervals
+  moveIntervals.forEach(interval => clearInterval(interval));
+  moveIntervals = [];
+  
   // Remove event listeners
   gameContainer.removeEventListener('touchstart', handleTouchStart);
   gameContainer.removeEventListener('touchmove', handleTouchMove);
-  gameContainer.removeEventListener('touchend', handleTouchEnd);
   gameContainer.removeEventListener('mousemove', handleMouseMove);
   window.removeEventListener('keydown', handleKeyDown);
 }
@@ -72,18 +85,14 @@ function stopGame() {
 // Touch event handlers
 function handleTouchStart(event) {
   event.preventDefault();
-  touchStartX = event.touches[0].clientX;
+  touchMoveX = event.touches[0].clientX;
+  moveBike();
 }
 
 function handleTouchMove(event) {
   event.preventDefault();
   touchMoveX = event.touches[0].clientX;
   moveBike();
-}
-
-function handleTouchEnd() {
-  touchStartX = 0;
-  touchMoveX = 0;
 }
 
 // Mouse movement handler
@@ -125,13 +134,14 @@ function createObstacle() {
   const obstacle = document.createElement('div');
   obstacle.className = 'obstacle';
   obstacle.style.left = Math.random() * (gameContainer.offsetWidth - 40) + 'px';
+  obstacle.style.top = '0px';
   gameContainer.appendChild(obstacle);
   
   moveObstacle(obstacle);
   
-  // Gradually increase speed
-  currentObstacleSpeed += 0.2;
-  obstacleCreationInterval = Math.max(300, obstacleCreationInterval - 5);
+  // Gradually increase difficulty
+  currentObstacleSpeed += 0.02;
+  obstacleCreationInterval = Math.max(300, obstacleCreationInterval - 1);
 }
 
 function moveObstacle(obstacle) {
@@ -139,25 +149,37 @@ function moveObstacle(obstacle) {
   let obstaclePosition = 0;
   
   const moveInterval = setInterval(() => {
+    if (!gameStarted) {
+      clearInterval(moveInterval);
+      return;
+    }
+    
     obstaclePosition += currentObstacleSpeed;
     obstacle.style.top = obstaclePosition + 'px';
     
+    // Check for collision
+    if (checkCollision(obstacle)) {
+      stopGame();
+      document.getElementById('score').textContent = `Game Over! Score: ${score}`;
+      setTimeout(() => {
+        alert(`Game Over!\nYour Score: ${score}`);
+      }, 100);
+      clearInterval(moveInterval);
+      return;
+    }
+    
     // Check if obstacle passed the bottom
     if (obstaclePosition > gameHeight) {
-      if (checkCollision(obstacle)) {
-        stopGame();
-        setTimeout(() => {
-          alert(`Game Over!\nYour Score: ${score}`);
-        }, 100);
-      }
       obstacle.remove();
       clearInterval(moveInterval);
-    } else {
-      // Update score
+      moveIntervals = moveIntervals.filter(i => i !== moveInterval);
+      // Increase score only when obstacle passes safely
       score += 1;
       document.getElementById('score').textContent = 'Score: ' + score;
     }
   }, 16); // ~60fps
+  
+  moveIntervals.push(moveInterval);
 }
 
 // Collision detection
@@ -166,9 +188,9 @@ function checkCollision(obstacle) {
   const obstacleRect = obstacle.getBoundingClientRect();
   
   return (
-    bikeRect.top < obstacleRect.bottom &&
-    bikeRect.bottom > obstacleRect.top &&
     bikeRect.left < obstacleRect.right &&
-    bikeRect.right > obstacleRect.left
+    bikeRect.right > obstacleRect.left &&
+    bikeRect.top < obstacleRect.bottom &&
+    bikeRect.bottom > obstacleRect.top
   );
 }
